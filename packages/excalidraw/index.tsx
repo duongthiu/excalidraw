@@ -69,6 +69,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     onExport,
     className,
     ownerDocument = document,
+    renderEnvironment,
     onChange,
     onThemeChange,
     onIncrement,
@@ -212,6 +213,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           onExport={onExport}
           className={className}
           ownerDocument={ownerDocument}
+          renderEnvironment={renderEnvironment}
           onChange={onChange}
           onThemeChange={onThemeChange}
           onIncrement={onIncrement}
@@ -423,12 +425,13 @@ export {
 
 export { reconcileElements } from "./data/reconcile";
 
-export {
-  exportToCanvas,
-  exportToBlob,
-  exportToSvg,
-  exportToClipboard,
-} from "@excalidraw/utils/export";
+export { exportScene, exportToClipboard } from "./scene/export";
+
+export type {
+  ExportSceneData,
+  ExportSceneConfig,
+  ExportSceneOptions,
+} from "./scene/export";
 
 export { serializeAsJSON, serializeLibraryAsJSON } from "./data/json";
 export {
@@ -493,7 +496,11 @@ export type {
   SavedChats,
 } from "./components/TTDDialog/types";
 
-export type { ViewportStatusFrame } from "./types";
+export type {
+  ViewportStatusFrame,
+  ElementRenderOverride,
+  ElementRenderOverrides,
+} from "./types";
 
 export { zoomToFitBounds, DEFAULT_OVERSCROLL } from "./viewport";
 
@@ -528,6 +535,7 @@ export { isElementLink } from "@excalidraw/element";
 export { Fonts } from "./fonts/Fonts";
 
 export { setCustomTextMetricsProvider } from "@excalidraw/element";
+export type { RenderEnvironment } from "@excalidraw/element";
 
 export { CommandPalette } from "./components/CommandPalette/CommandPalette";
 

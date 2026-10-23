@@ -21,11 +21,13 @@ import {
 import { PropertiesPopover } from "../PropertiesPopover";
 import { QuickSearch } from "../QuickSearch";
 import { ScrollableList } from "../ScrollableList";
+import { TopPicksTip } from "../TopPicksDnD/TopPicksTip";
 import DropdownMenuGroup from "../dropdownMenu/DropdownMenuGroup";
 import MenuItemContent from "../dropdownMenu/DropdownMenuItemContent";
 import { getDropdownMenuItemClassName } from "../dropdownMenu/common";
 import { PlusIcon } from "../icons";
 
+import { useFontPickerDnD } from "./fontTopPicksDnD";
 import { fontPickerKeyHandler } from "./keyboardNavHandlers";
 import {
   FontPickerListItem,
@@ -50,8 +52,70 @@ interface FontPickerListProps {
   onLeave: () => void;
   onOpen: () => void;
   onClose: () => void;
+  /** present only while the top picks are customized */
+  onResetTopPicks?: () => void;
 }
 
+<<<<<<< ours
+||||||| base
+const getFontFamilyIcon = (fontFamily: FontFamilyValues): JSX.Element => {
+  switch (fontFamily) {
+    case FONT_FAMILY.Excalifont:
+    case FONT_FAMILY.Virgil:
+      return FreedrawIcon;
+    case FONT_FAMILY.Nunito:
+    case FONT_FAMILY.Helvetica:
+      return FontFamilyNormalIcon;
+    case FONT_FAMILY["Lilita One"]:
+      return FontFamilyHeadingIcon;
+    case FONT_FAMILY["Comic Shanns"]:
+    case FONT_FAMILY.Cascadia:
+      return FontFamilyCodeIcon;
+    default:
+      return FontFamilyNormalIcon;
+  }
+};
+
+const getFontFamilyLabel = (
+  fontFamily: FontFamilyValues,
+  fontFaces: ExcalidrawFontFace[],
+) =>
+  // prefer our config as the browser resolved names may be wrapped in quotes and such
+  Object.entries(FONT_FAMILY).find(([, id]) => id === fontFamily)?.[0] ??
+  fontFaces[0]?.fontFace?.family ??
+  "Unknown";
+
+=======
+export const getFontFamilyIcon = (
+  fontFamily: FontFamilyValues,
+): JSX.Element => {
+  switch (fontFamily) {
+    case FONT_FAMILY.Excalifont:
+    case FONT_FAMILY.Virgil:
+      return FreedrawIcon;
+    case FONT_FAMILY.Nunito:
+    case FONT_FAMILY.Helvetica:
+      return FontFamilyNormalIcon;
+    case FONT_FAMILY["Lilita One"]:
+      return FontFamilyHeadingIcon;
+    case FONT_FAMILY["Comic Shanns"]:
+    case FONT_FAMILY.Cascadia:
+      return FontFamilyCodeIcon;
+    default:
+      return FontFamilyNormalIcon;
+  }
+};
+
+export const getFontFamilyLabel = (
+  fontFamily: FontFamilyValues,
+  fontFaces: ExcalidrawFontFace[],
+) =>
+  // prefer our config as the browser resolved names may be wrapped in quotes and such
+  Object.entries(FONT_FAMILY).find(([, id]) => id === fontFamily)?.[0] ??
+  fontFaces[0]?.fontFace?.family ??
+  "Unknown";
+
+>>>>>>> theirs
 export const FontPickerList = React.memo(
   ({
     selectedFontFamily,
@@ -61,15 +125,86 @@ export const FontPickerList = React.memo(
     onLeave,
     onOpen,
     onClose,
+    onResetTopPicks,
   }: FontPickerListProps) => {
     const { container } = useExcalidrawContainer();
     const app = useApp();
     const fonts = app.fonts.instance;
     const { showDeprecatedFonts, fontProviders } = useAppProps();
     const stylesPanelMode = useStylesPanelMode();
+<<<<<<< ours
     const hasFontProviders = useMemo(
       () => !!Object.keys(fontProviders ?? {}).length,
       [fontProviders],
+||||||| base
+
+    const [searchTerm, setSearchTerm] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+    const allFonts = useMemo(
+      () =>
+        Array.from(Fonts.registered.entries())
+          .filter(
+            ([_, { metadata }]) => !metadata.private && !metadata.fallback,
+          )
+          .map(([familyId, { metadata, fontFaces }]) => {
+            const fontDescriptor = {
+              value: familyId,
+              icon: getFontFamilyIcon(familyId),
+              text: getFontFamilyLabel(familyId, fontFaces),
+            };
+
+            if (metadata.deprecated) {
+              Object.assign(fontDescriptor, {
+                deprecated: metadata.deprecated,
+                badge: {
+                  type: DropDownMenuItemBadgeType.RED,
+                  placeholder: t("fontList.badge.old"),
+                },
+              });
+            }
+
+            return fontDescriptor as FontDescriptor;
+          })
+          .sort((a, b) =>
+            a.text.toLowerCase() > b.text.toLowerCase() ? 1 : -1,
+          ),
+      [],
+=======
+    // present only when the top picks are customizable
+    const dnd = useFontPickerDnD();
+
+    const [searchTerm, setSearchTerm] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+    const allFonts = useMemo(
+      () =>
+        Array.from(Fonts.registered.entries())
+          .filter(
+            ([_, { metadata }]) => !metadata.private && !metadata.fallback,
+          )
+          .map(([familyId, { metadata, fontFaces }]) => {
+            const fontDescriptor = {
+              value: familyId,
+              icon: getFontFamilyIcon(familyId),
+              text: getFontFamilyLabel(familyId, fontFaces),
+            };
+
+            if (metadata.deprecated) {
+              Object.assign(fontDescriptor, {
+                deprecated: metadata.deprecated,
+                badge: {
+                  type: DropDownMenuItemBadgeType.RED,
+                  placeholder: t("fontList.badge.old"),
+                },
+              });
+            }
+
+            return fontDescriptor as FontDescriptor;
+          })
+          .sort((a, b) =>
+            a.text.toLowerCase() > b.text.toLowerCase() ? 1 : -1,
+          ),
+      [],
+>>>>>>> theirs
     );
 
     const [localHoveredFontFamily, setLocalHoveredFontFamily] =
@@ -260,6 +395,154 @@ export const FontPickerList = React.memo(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+<<<<<<< ours
+||||||| base
+    const sceneFilteredFonts = useMemo(
+      () => filteredFonts.filter((font) => sceneFamilies.has(font.value)),
+      [filteredFonts, sceneFamilies],
+    );
+
+    const availableFilteredFonts = useMemo(
+      () => filteredFonts.filter((font) => !sceneFamilies.has(font.value)),
+      [filteredFonts, sceneFamilies],
+    );
+
+    const FontPickerListItem = ({
+      font,
+      order,
+    }: {
+      font: FontDescriptor;
+      order: number;
+    }) => {
+      const ref = useRef<HTMLButtonElement>(null);
+      const isHovered = font.value === hoveredFont?.value;
+      const isSelected = font.value === selectedFontFamily;
+
+      useEffect(() => {
+        if (!isHovered) {
+          return;
+        }
+        if (order === 0) {
+          // scroll into the first item differently, so it's visible what is above (i.e. group title)
+          ref.current?.scrollIntoView?.({ block: "end" });
+        } else {
+          ref.current?.scrollIntoView?.({ block: "nearest" });
+        }
+      }, [isHovered, order]);
+
+      return (
+        <button
+          ref={ref}
+          type="button"
+          value={font.value}
+          className={getDropdownMenuItemClassName("", isSelected, isHovered)}
+          title={font.text}
+          // allow to tab between search and selected font
+          tabIndex={isSelected ? 0 : -1}
+          onClick={(e) => {
+            wrappedOnSelect(Number(e.currentTarget.value));
+          }}
+          onMouseMove={() => {
+            if (hoveredFont?.value !== font.value) {
+              onHover(font.value);
+            }
+          }}
+        >
+          <MenuItemContent
+            icon={font.icon}
+            badge={
+              font.badge && (
+                <DropDownMenuItemBadge type={font.badge.type}>
+                  {font.badge.placeholder}
+                </DropDownMenuItemBadge>
+              )
+            }
+            textStyle={{
+              fontFamily: getFontFamilyString({ fontFamily: font.value }),
+            }}
+          >
+            {font.text}
+          </MenuItemContent>
+        </button>
+      );
+    };
+
+=======
+    const sceneFilteredFonts = useMemo(
+      () => filteredFonts.filter((font) => sceneFamilies.has(font.value)),
+      [filteredFonts, sceneFamilies],
+    );
+
+    const availableFilteredFonts = useMemo(
+      () => filteredFonts.filter((font) => !sceneFamilies.has(font.value)),
+      [filteredFonts, sceneFamilies],
+    );
+
+    const FontPickerListItem = ({
+      font,
+      order,
+    }: {
+      font: FontDescriptor;
+      order: number;
+    }) => {
+      const ref = useRef<HTMLButtonElement>(null);
+      const isHovered = font.value === hoveredFont?.value;
+      const isSelected = font.value === selectedFontFamily;
+
+      useEffect(() => {
+        if (!isHovered) {
+          return;
+        }
+        if (order === 0) {
+          // scroll into the first item differently, so it's visible what is above (i.e. group title)
+          ref.current?.scrollIntoView?.({ block: "end" });
+        } else {
+          ref.current?.scrollIntoView?.({ block: "nearest" });
+        }
+      }, [isHovered, order]);
+
+      return (
+        <button
+          ref={ref}
+          type="button"
+          value={font.value}
+          className={getDropdownMenuItemClassName("", isSelected, isHovered)}
+          title={font.text}
+          // allow to tab between search and selected font
+          tabIndex={isSelected ? 0 : -1}
+          onClick={(e) => {
+            wrappedOnSelect(Number(e.currentTarget.value));
+          }}
+          onMouseMove={() => {
+            // don't live-preview fonts the dragged one merely passes over
+            if (!dnd?.dragState && hoveredFont?.value !== font.value) {
+              onHover(font.value);
+            }
+          }}
+          onPointerDown={
+            dnd ? (event) => dnd.startSourceDrag(event, font.value) : undefined
+          }
+        >
+          <MenuItemContent
+            icon={font.icon}
+            badge={
+              font.badge && (
+                <DropDownMenuItemBadge type={font.badge.type}>
+                  {font.badge.placeholder}
+                </DropDownMenuItemBadge>
+              )
+            }
+            textStyle={{
+              fontFamily: getFontFamilyString({ fontFamily: font.value }),
+            }}
+          >
+            {font.text}
+          </MenuItemContent>
+        </button>
+      );
+    };
+
+>>>>>>> theirs
     const groups = [];
 
     if (sceneFilteredFonts.length) {
@@ -379,10 +662,19 @@ export const FontPickerList = React.memo(
             </button>
           ) : null}
         </ScrollableList>
+        {dnd && (
+          <TopPicksTip
+            className="FontPicker__tip"
+            tip={t("fontList.topPicksTip")}
+            onReset={onResetTopPicks}
+            resetTitle={t("fontList.resetTopPicks")}
+          />
+        )}
       </PropertiesPopover>
     );
   },
   (prev, next) =>
     prev.selectedFontFamily === next.selectedFontFamily &&
-    prev.hoveredFontFamily === next.hoveredFontFamily,
+    prev.hoveredFontFamily === next.hoveredFontFamily &&
+    !!prev.onResetTopPicks === !!next.onResetTopPicks,
 );
